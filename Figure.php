@@ -69,7 +69,6 @@ class Figure
         $this->type = $type;
     }
 
-
     public function setPositionX($position_x)
     {
         $this->position_x = $position_x;
@@ -79,15 +78,5 @@ class Figure
     {
         $this->position_y = $position_y;
     }
-//    public function getPossible()  //Получение возможных ходов для данной фигуры
-//    {
-//        $possible_moves = array();
-//        if ($this->type == 'p'){
-//            $possible_moves[] = array(0 => $this->position_x, 1 => $this->position_y + 1);
-//            if ($this->move_counter == 0) {
-//                $possible_moves[] = array(0 => $this->position_x, 1 => $this->position_y + 2);
-//            }
-//        } elseif ($this->type == '')
-//        return $possible_moves;
-//    } Будет в главном файле
+
 }
