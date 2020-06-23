@@ -11,6 +11,8 @@ const NO_WARNINGS = 0;
 const BLACKWIN = 1;
 const WHITEWIN = 2;
 
+require 'Figure.php';
+
 function start_new_game()
 {
     global $board;
@@ -46,7 +48,7 @@ function getPossibleFigures(int $turnNumber)
     if ($turnNumber % 2 == 1) {  //Для белых
         foreach ($board as $row) {
             foreach ($row as $tile) {
-                if ($tile == 0) {
+                if (is_int($tile)) {
                     continue;
                 } else {
                     if ($tile->getColor() == 'w') {
@@ -58,7 +60,7 @@ function getPossibleFigures(int $turnNumber)
     } else {  //Для черных
         foreach ($board as $row) {
             foreach ($row as $tile) {
-                if ($tile == 0) {
+                if (is_int($tile)) {
                     continue;
                 } else {
                     if ($tile->getColor() == 'b') {
@@ -76,7 +78,7 @@ function checkForKing(string $color)
     global $board;
     foreach ($board as $row) {
         foreach ($row as $tile) {
-            if ($tile == 0) {
+            if (is_int($tile)) {
                 continue;  //Пропуск пустой клетки
             } else {
                 if ($tile->getType() == 'k' && $tile->getColor() == $color) {
@@ -99,23 +101,27 @@ function getPossibleMoves(\Classes\Figure $figure)
     $pos_Y = $figure->getPositionY();
     if ($figure->getType() == 'p') {  //Логика ходьбы для пешки
         if ($figure->getColor() == 'w') {
-            if ($pos_X != 8 && $board[$pos_Y + 1][$pos_X + 1] != 0 && $board[$pos_Y + 1][$pos_X + 1]->getColor() != $figure->getColor()) {
-                if ($pos_Y + 1 == 8) {
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'r'];
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'q'];
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'n'];
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'b'];  //Механизм смены типа пешки при достижении края доски
-                } else {
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'p'];  //Обычный ход
+            if ($pos_X != 8 && is_object($board[$pos_Y + 1][$pos_X + 1])) {
+                if ($board[$pos_Y + 1][$pos_X + 1]->getColor() != $figure->getColor()) {
+                    if ($pos_Y + 1 == 8) {
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'r'];
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'q'];
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'n'];
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'b'];  //Механизм смены типа пешки при достижении края доски
+                    } else {
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y + 1, 'm', 'p'];  //Обычный ход
+                    }
                 }
-            } else if ($pos_X != 0 && $board[$pos_Y + 1][$pos_X - 1] != 0 && $board[$pos_Y + 1][$pos_X - 1]->getColor() != $figure->getColor()) {
-                if ($pos_Y + 1 == 8) {
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'r'];
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'q'];
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'n'];
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'b'];
-                } else {
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'p'];
+            } else if ($pos_X != 1 && is_object($board[$pos_Y + 1][$pos_X - 1])){
+                if ($board[$pos_Y + 1][$pos_X - 1]->getColor() != $figure->getColor()) {
+                    if ($pos_Y + 1 == 8) {
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'r'];
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'q'];
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'n'];
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'b'];
+                    } else {
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y + 1, 'm', 'p'];
+                    }
                 }
             }
             if ($pos_Y + 1 == 8) {
@@ -123,30 +129,34 @@ function getPossibleMoves(\Classes\Figure $figure)
                 $possibleMoves[] = [$pos_X, $pos_Y + 1, 'm', 'q'];
                 $possibleMoves[] = [$pos_X, $pos_Y + 1, 'm', 'n'];
                 $possibleMoves[] = [$pos_X, $pos_Y + 1, 'm', 'b']; //Движение вперед со сменой типа (край доски)
-            } else if ($pos_Y + 1 < 8 && $board[$pos_Y + 1][$pos_X] == 0) {
+            } else if ($pos_Y + 1 < 8 && is_int($board[$pos_Y + 1][$pos_X])) {
                 $possibleMoves[] = [$pos_X, $pos_Y + 1, 'm', 'p']; //Движение вперед обычное
-                if ($figure->getMoveCounter() == 0 && $board[$pos_Y + 2][$pos_X] == 0) {
+                if ($figure->getMoveCounter() == 0 && is_int($board[$pos_Y + 2][$pos_X])) {
                     $possibleMoves[] = [$pos_X, $pos_Y + 2, 'm', 'p']; //Первый ход пешки
                 }
             }
         } else if ($figure->getColor() == 'b') {
-            if ($pos_X != 0 && $board[$pos_Y - 1][$pos_X - 1] != 0 && $board[$pos_Y - 1][$pos_X - 1]->getColor() != $figure->getColor()) {
-                if ($pos_Y - 1 == 1) {
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'r'];
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'q'];
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'n'];
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'b'];
-                } else {
-                    $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'p'];
+            if ($pos_X != 1 && is_object($board[$pos_Y - 1][$pos_X - 1])){
+                if ($board[$pos_Y - 1][$pos_X - 1]->getColor() != $figure->getColor()) {
+                    if ($pos_Y - 1 == 1) {
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'r'];
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'q'];
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'n'];
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'b'];
+                    } else {
+                        $possibleMoves[] = [$pos_X - 1, $pos_Y - 1, 'm', 'p'];
+                    }
                 }
-            } else if ($pos_X != 8 && $board[$pos_Y - 1][$pos_X + 1] != 0 && $board[$pos_Y - 1][$pos_X + 1]->getColor() != $figure->getColor()) {
-                if ($pos_Y - 1 == 1) {
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'r'];
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'q'];
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'n'];
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'b'];
-                } else {
-                    $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'p'];
+            } else if ($pos_X != 8 && is_object($board[$pos_Y - 1][$pos_X + 1])){
+                if ($board[$pos_Y - 1][$pos_X + 1]->getColor() != $figure->getColor()) {
+                    if ($pos_Y - 1 == 1) {
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'r'];
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'q'];
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'n'];
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'b'];
+                    } else {
+                        $possibleMoves[] = [$pos_X + 1, $pos_Y - 1, 'm', 'p'];
+                    }
                 }
             }
             if ($pos_Y - 1 == 1) {
@@ -154,93 +164,101 @@ function getPossibleMoves(\Classes\Figure $figure)
                 $possibleMoves[] = [$pos_X, $pos_Y - 1, 'm', 'q'];
                 $possibleMoves[] = [$pos_X, $pos_Y - 1, 'm', 'n'];
                 $possibleMoves[] = [$pos_X, $pos_Y - 1, 'm', 'b'];
-            } else if ($pos_Y - 1 > 1 && $board[$pos_Y - 1][$pos_X] == 0) {
+            } else if ($pos_Y - 1 > 1 && is_int($board[$pos_Y - 1][$pos_X])) {
                 $possibleMoves[] = [$pos_X, $pos_Y - 1, 'm', 'p'];
-                if ($figure->getMoveCounter() == 0 && $board[$pos_Y - 2][$pos_X] == 0) {
+                if ($figure->getMoveCounter() == 0 && is_int($board[$pos_Y - 2][$pos_X])) {
                     $possibleMoves[] = [$pos_X, $pos_Y - 2, 'm', 'p'];
                 }
             }
         }
-    } else if ($figure->getType() == 'r') {   //Логика ходов для ладьи
+    } else if ($figure->getType() == 'r') {   //Логика ходов для ладьи  //TODO: Переписать все, что ниже
         for ($i = $pos_X - 1; $i > 0; $i--) {
-            if ($board[$pos_Y][$i] == 0 || $board[$pos_Y][$i]->getColor() != $figure->getColor()) { //Ищем ходы в каждую сторону, пока не натыкаемся на врага или своего. Если враг, то его клетку записываем, иначе -- нет
+            if (is_int($board[$pos_Y][$i])) { //Ищем ходы в каждую сторону, пока не натыкаемся на врага или своего. Если враг, то его клетку записываем, иначе -- нет
                 $possibleMoves[] = [$i, $pos_Y, 'm', 'r'];
-                if ($board[$pos_Y][$i] != 0) {
-                    break;
-                }
             } else {
+                if ($board[$pos_Y][$i]->getColor() != $figure->getColor()){
+                    $possibleMoves[] = [$i, $pos_Y, 'm', 'r'];
+                }
                 break;
             }
         }
         for ($i = $pos_X + 1; $i < 9; $i++) {
-            if ($board[$pos_Y][$i] == 0 || $board[$pos_Y][$i]->getColor() != $figure->getColor()) {
+            if (is_int($board[$pos_Y][$i])) {
                 $possibleMoves[] = [$i, $pos_Y, 'm', 'r'];
-                if ($board[$pos_Y][$i] != 0) {
-                    break;
-                }
             } else {
+                if ($board[$pos_Y][$i]->getColor() != $figure->getColor()) {
+                    $possibleMoves[] = [$i, $pos_Y, 'm', 'r'];
+                }
                 break;
             }
         }
         for ($j = $pos_Y - 1; $j > 0; $j--) {
-            if ($board[$j][$pos_X] == 0 || $board[$j][$pos_X]->getColor() != $figure->getColor()) {
+            if (is_int($board[$j][$pos_X])) {
                 $possibleMoves[] = [$pos_X, $j, 'm', 'r'];
-                if ($board[$j][$pos_X] != 0) {
-                    break;
-                }
             } else {
+                if ($board[$j][$pos_X]->getColor() != $figure->getColor()){
+                    $possibleMoves[] = [$pos_X, $j, 'm', 'r'];
+                }
                 break;
             }
         }
         for ($j = $pos_Y + 1; $j < 9; $j++) {
-            if ($board[$j][$pos_X] == 0 || $board[$j][$pos_X]->getColor() != $figure->getColor()) {
+            if (is_int($board[$j][$pos_X])) {
                 $possibleMoves[] = [$pos_X, $j, 'm', 'r'];
-                if ($board[$j][$pos_X] != 0) {
-                    break;
-                }
             } else {
+                if ($board[$j][$pos_X]->getColor() != $figure->getColor()){
+                    $possibleMoves[] = [$pos_X, $j, 'm', 'r'];
+                }
                 break;
             }
         }
     } else if ($figure->getType() == 'b') {  //Логика ходов для слона
         for ($i = 1; $i < min(8 - $pos_X, 8 - $pos_Y); $i++) {  //Так, как и для ладьи. Ищем ходы до тех пор, пока клетка или свободна, или в ней враг другого цвета.
-            if ($board[$pos_Y + $i][$pos_X + $i] == 0 || $board[$pos_Y + $i][$pos_X + $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X + $i, $pos_Y + $i, 'm', 'b'];
-                if ($board[$pos_Y + $i][$pos_X + $i] != 0) {
+            if (1 <= $pos_Y + $i && $pos_Y + $i <= 8 && 1 <= $pos_X + $i && $pos_X + $i <= 8) {
+                if (is_int($board[$pos_Y + $i][$pos_X + $i])) {
+                    $possibleMoves[] = [$pos_X + $i, $pos_Y + $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y + $i][$pos_X + $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X + $i, $pos_Y + $i, 'm', 'b'];
+                    }
                     break;
                 }
-            } else {
-                break;
             }
         }
         for ($i = 1; $i < min(8 - $pos_X, $pos_Y - 1); $i++) {
-            if ($board[$pos_Y + $i][$pos_X - $i] == 0 || $board[$pos_Y + $i][$pos_X - $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X + $i, $pos_Y - $i, 'm', 'b'];
-                if ($board[$pos_Y + $i][$pos_X - $i] != 0) {
+            if (1 <= $pos_Y + $i && $pos_Y + $i <= 8 && 1 <= $pos_X - $i && $pos_X - $i <= 8) {
+                if (is_int($board[$pos_Y + $i][$pos_X - $i])) {
+                    $possibleMoves[] = [$pos_X + $i, $pos_Y - $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y + $i][$pos_X - $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X + $i, $pos_Y - $i, 'm', 'b'];
+                    }
                     break;
                 }
-            } else {
-                break;
             }
         }
         for ($i = 1; $i < min($pos_X - 1, 8 - $pos_Y); $i++) {
-            if ($board[$pos_Y - $i][$pos_X + $i] == 0 || $board[$pos_Y - $i][$pos_X + $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X - $i, $pos_Y + $i, 'm', 'b'];
-                if ($board[$pos_Y - $i][$pos_X + $i] != 0) {
+            if (1 <= $pos_Y - $i && $pos_Y - $i <= 8 && 1 <= $pos_X + $i && $pos_X + $i <= 8) {
+                if (is_int($board[$pos_Y - $i][$pos_X + $i])) {
+                    $possibleMoves[] = [$pos_X - $i, $pos_Y + $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y - $i][$pos_X + $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X - $i, $pos_Y + $i, 'm', 'b'];
+                    }
                     break;
                 }
-            } else {
-                break;
             }
         }
         for ($i = 1; $i < min($pos_X - 1, $pos_Y - 1); $i++) {
-            if ($board[$pos_Y - $i][$pos_X - $i] == 0 || $board[$pos_Y - $i][$pos_X - $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X - $i, $pos_Y - $i, 'm', 'b'];
-                if ($board[$pos_Y - $i][$pos_X - $i] != 0) {
+            if (1 <= $pos_Y - $i && $pos_Y - $i <= 8 && 1 <= $pos_X - $i && $pos_X - $i <= 8) {
+                if (is_int($board[$pos_Y - $i][$pos_X - $i])) {
+                    $possibleMoves[] = [$pos_X - $i, $pos_Y - $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y - $i][$pos_X - $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X - $i, $pos_Y - $i, 'm', 'b'];
+                    }
                     break;
                 }
-            } else {
-                break;
             }
         }
     } else if ($figure->getType() == 'n') {  //Логика ходов для коня
@@ -248,15 +266,27 @@ function getPossibleMoves(\Classes\Figure $figure)
         $possible_changes_2 = [-2, 2];
         foreach ($possible_changes_1 as $i) { //Просто перебор всех комбинаций вида (+-1, +-2)
             foreach ($possible_changes_2 as $j) {
-                if ($board[$pos_Y + $j][$pos_X + $i] == 0 || $board[$pos_Y + $j][$pos_X + $i]->getColor() != $figure->getColor()) {
-                    $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'n'];
+                if (1 <= $pos_X + $i && $pos_X + $i <= 8 && 1 <= $pos_Y + $j && $pos_Y + $j <= 8) {
+                    if (is_int($board[$pos_Y + $j][$pos_X + $i])) {
+                        $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'n'];
+                    } else {
+                        if ($board[$pos_Y + $j][$pos_X + $i]->getColor() != $figure->getColor()) {
+                            $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'n'];
+                        }
+                    }
                 }
             }
         }
         foreach ($possible_changes_2 as $i) {  //Просто перебор всех комбинаций вида (+-2, +-1)
             foreach ($possible_changes_1 as $j) {
-                if ($board[$pos_Y + $j][$pos_X + $i] == 0 || $board[$pos_Y + $j][$pos_X + $i]->getColor() != $figure->getColor()) {
-                    $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'n'];
+                if (1 <= $pos_X + $i && $pos_X + $i <= 8 && 1 <= $pos_Y + $j && $pos_Y + $j <= 8) {
+                    if (is_int($board[$pos_Y + $j][$pos_X + $i])) {
+                        $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'n'];
+                    } else {
+                        if ($board[$pos_Y + $j][$pos_X + $i]->getColor() != $figure->getColor()) {
+                            $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'n'];
+                        }
+                    }
                 }
             }
         }
@@ -267,8 +297,14 @@ function getPossibleMoves(\Classes\Figure $figure)
                 if ($i == 0 && $j == 0) {
                     continue;
                 } else {
-                    if ($board[$pos_Y + $j][$pos_X + $i] == 0 || $board[$pos_Y + $j][$pos_X + $i]->getColor() != $figure->getColor()) {
-                        $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'k'];
+                    if (1 <= $pos_X + $i && $pos_X + $i <= 8 && 1 <= $pos_Y + $j && $pos_Y + $j <= 8) {
+                        if (is_int($board[$pos_Y + $j][$pos_X + $i])) {
+                            $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'k'];
+                        } else {
+                            if ($board[$pos_Y + $j][$pos_X + $i]->getColor() != $figure->getColor()) {
+                                $possibleMoves[] = [$pos_X + $i, $pos_Y + $j, 'm', 'k'];
+                            }
+                        }
                     }
                 }
             }
@@ -277,146 +313,162 @@ function getPossibleMoves(\Classes\Figure $figure)
         global $roqueBlack;
         if ($pos_Y == 1) {
             if ($figure->getMoveCounter() == 0 && $roqueWhite == 0) {
-                if ($board[$pos_Y][1] != 0 && $board[$pos_Y][1]->getMoveCounter() != 0) {
-                    $broken = False;
-                    for ($i = 2; $i < $pos_X; $i++) {  //Проверяем, пустые ли клетки
-                        if ($board[$pos_Y][$i] == 0) {
-                            continue;
-                        } else {
-                            $broken = True;
-                            break;
+                if (is_object($board[$pos_Y][1])) {
+                    if ($board[$pos_Y][1]->getMoveCounter() != 0) {
+                        $broken = False;
+                        for ($i = 2; $i < $pos_X; $i++) {  //Проверяем, пустые ли клетки
+                            if (is_int($board[$pos_Y][$i])) {
+                                continue;
+                            } else {
+                                $broken = True;
+                                break;
+                            }
                         }
-                    }
-                    if ($broken == False) {
-                        $possibleMoves[] = [$pos_X - 2, $pos_Y, 'r', 'k'];
+                        if ($broken == False) {
+                            $possibleMoves[] = [$pos_X - 2, $pos_Y, 'r', 'k'];
+                        }
                     }
                 }
-                if ($board[$pos_Y][8] != 0 && $board[$pos_Y][1]->getMoveCounter() != 0) {  //Проверяем, пустые ли клетки в другую сторону
-                    $broken = False;
-                    for ($i = 8; $i > $pos_X; $i--) {
-                        if ($board[$pos_Y][$i] == 0) {
-                            continue;
-                        } else {
-                            $broken = True;
-                            break;
+                if (is_object($board[$pos_Y][8])) {  //Проверяем, пустые ли клетки в другую сторону
+                    if ($board[$pos_Y][8]->getMoveCounter() != 0) {
+                        $broken = False;
+                        for ($i = 8; $i > $pos_X; $i--) {
+                            if (is_int($board[$pos_Y][$i])) {
+                                continue;
+                            } else {
+                                $broken = True;
+                                break;
+                            }
                         }
-                    }
-                    if ($broken == False) {
-                        $possibleMoves[] = [$pos_X + 2, $pos_Y, 'r', 'k'];
+                        if ($broken == False) {
+                            $possibleMoves[] = [$pos_X + 2, $pos_Y, 'r', 'k'];
+                        }
                     }
                 }
             }
         } else {
-            if ($figure->getMoveCounter() == 0 && $roqueBlack == 1) {
-                if ($board[$pos_Y][1] != 0 && $board[$pos_Y][1]->getMoveCounter() != 0) {
-                    $broken = False;
-                    for ($i = 2; $i < $pos_X; $i++) {
-                        if ($board[$pos_Y][$i] == 0) {
-                            continue;
-                        } else {
-                            $broken = True;
-                            break;
+            if ($figure->getMoveCounter() == 0 && $roqueBlack == 0) {
+                if (is_object($board[$pos_Y][1])) {
+                    if ($board[$pos_Y][1]->getMoveCounter() != 0) {
+                        $broken = False;
+                        for ($i = 2; $i < $pos_X; $i++) {  //Проверяем, пустые ли клетки
+                            if (is_int($board[$pos_Y][$i])) {
+                                continue;
+                            } else {
+                                $broken = True;
+                                break;
+                            }
+                        }
+                        if ($broken == False) {
+                            $possibleMoves[] = [$pos_X - 2, $pos_Y, 'r', 'k'];
                         }
                     }
-                    if ($broken == False) {
-                        $possibleMoves[] = [$pos_X - 2, $pos_Y, 'r', 'k'];
-                    }
                 }
-                if ($board[$pos_Y][8] != 0 && $board[$pos_Y][1]->getMoveCounter() != 0) {
-                    $broken = False;
-                    for ($i = 8; $i > $pos_X; $i--) {
-                        if ($board[$pos_Y][$i] == 0) {
-                            continue;
-                        } else {
-                            $broken = True;
-                            break;
+                if (is_object($board[$pos_Y][8])) {  //Проверяем, пустые ли клетки в другую сторону
+                    if ($board[$pos_Y][8]->getMoveCounter() != 0) {
+                        $broken = False;
+                        for ($i = 8; $i > $pos_X; $i--) {
+                            if (is_int($board[$pos_Y][$i])) {
+                                continue;
+                            } else {
+                                $broken = True;
+                                break;
+                            }
+                        }
+                        if ($broken == False) {
+                            $possibleMoves[] = [$pos_X + 2, $pos_Y, 'r', 'k'];
                         }
                     }
-                    if ($broken == False) {
-                        $possibleMoves[] = [$pos_X + 2, $pos_Y, 'r', 'k'];
-                    }
                 }
             }
         }
-    } else if ($figure->getType() == 'q') {  //Логика ходов для ферзя. Сочетание поиска ферзем и слоном.
-        for ($i = 1; $i < min(8 - $pos_X, 8 - $pos_Y); $i++) {
-            if ($board[$pos_Y + $i][$pos_X + $i] == 0 || $board[$pos_Y + $i][$pos_X + $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X + $i, $pos_Y + $i, 'm', 'q'];
-                if ($board[$pos_Y + $i][$pos_X + $i] != 0) {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-        for ($i = 1; $i < min(8 - $pos_X, $pos_Y - 1); $i++) {
-            if ($board[$pos_Y + $i][$pos_X - $i] == 0 || $board[$pos_Y + $i][$pos_X - $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X + $i, $pos_Y - $i, 'm', 'q'];
-                if ($board[$pos_Y + $i][$pos_X - $i] != 0) {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-        for ($i = 1; $i < min($pos_X - 1, 8 - $pos_Y); $i++) {
-            if ($board[$pos_Y - $i][$pos_X + $i] == 0 || $board[$pos_Y - $i][$pos_X + $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X - $i, $pos_Y + $i, 'm', 'q'];
-                if ($board[$pos_Y - $i][$pos_X + $i] != 0) {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-        for ($i = 1; $i < min($pos_X - 1, $pos_Y - 1); $i++) {
-            if ($board[$pos_Y - $i][$pos_X - $i] == 0 || $board[$pos_Y - $i][$pos_X - $i]->getColor() != $figure->getColor()) {
-                $possibleMoves[] = [$pos_X - $i, $pos_Y - $i, 'm', 'q'];
-                if ($board[$pos_Y - $i][$pos_X - $i] != 0) {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
+    } else if ($figure->getType() == 'q') {//Логика ходов для ферзя. Сочетание поиска ферзем и слоном.
         for ($i = $pos_X - 1; $i > 0; $i--) {
-            if ($board[$pos_Y][$i] == 0 || $board[$pos_Y][$i]->getColor() != $figure->getColor()) {
+            if (is_int($board[$pos_Y][$i])) { //Ищем ходы в каждую сторону, пока не натыкаемся на врага или своего. Если враг, то его клетку записываем, иначе -- нет
                 $possibleMoves[] = [$i, $pos_Y, 'm', 'q'];
-                if ($board[$pos_Y][$i] != 0) {
-                    break;
-                }
             } else {
+                if ($board[$pos_Y][$i]->getColor() != $figure->getColor()){
+                    $possibleMoves[] = [$i, $pos_Y, 'm', 'q'];
+                }
                 break;
             }
         }
         for ($i = $pos_X + 1; $i < 9; $i++) {
-            if ($board[$pos_Y][$i] == 0 || $board[$pos_Y][$i]->getColor() != $figure->getColor()) {
+            if (is_int($board[$pos_Y][$i])) {
                 $possibleMoves[] = [$i, $pos_Y, 'm', 'q'];
-                if ($board[$pos_Y][$i] != 0) {
-                    break;
-                }
             } else {
+                if ($board[$pos_Y][$i]->getColor() != $figure->getColor()) {
+                    $possibleMoves[] = [$i, $pos_Y, 'm', 'q'];
+                }
                 break;
             }
         }
         for ($j = $pos_Y - 1; $j > 0; $j--) {
-            if ($board[$j][$pos_X] == 0 || $board[$j][$pos_X]->getColor() != $figure->getColor()) {
+            if (is_int($board[$j][$pos_X])) {
                 $possibleMoves[] = [$pos_X, $j, 'm', 'q'];
-                if ($board[$j][$pos_X] != 0) {
-                    break;
-                }
             } else {
+                if ($board[$j][$pos_X]->getColor() != $figure->getColor()){
+                    $possibleMoves[] = [$pos_X, $j, 'm', 'q'];
+                }
                 break;
             }
         }
         for ($j = $pos_Y + 1; $j < 9; $j++) {
-            if ($board[$j][$pos_X] == 0 || $board[$j][$pos_X]->getColor() != $figure->getColor()) {
+            if (is_int($board[$j][$pos_X])) {
                 $possibleMoves[] = [$pos_X, $j, 'm', 'q'];
-                if ($board[$j][$pos_X] != 0) {
+            } else {
+                if ($board[$j][$pos_X]->getColor() != $figure->getColor()){
+                    $possibleMoves[] = [$pos_X, $j, 'm', 'q'];
+                }
+                break;
+            }
+        }
+        for ($i = 1; $i < min(8 - $pos_X, 8 - $pos_Y); $i++) {  //Так, как и для ладьи. Ищем ходы до тех пор, пока клетка или свободна, или в ней враг другого цвета.
+            if (1 <= $pos_Y + $i && $pos_Y + $i <= 8 && 1 <= $pos_X + $i && $pos_X + $i <= 8) {
+                if (is_int($board[$pos_Y + $i][$pos_X + $i])) {
+                    $possibleMoves[] = [$pos_X + $i, $pos_Y + $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y + $i][$pos_X + $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X + $i, $pos_Y + $i, 'm', 'b'];
+                    }
                     break;
                 }
-            } else {
-                break;
+            }
+        }
+        for ($i = 1; $i < min(8 - $pos_X, $pos_Y - 1); $i++) {
+            if (1 <= $pos_Y + $i && $pos_Y + $i <= 8 && 1 <= $pos_X - $i && $pos_X - $i <= 8) {
+                if (is_int($board[$pos_Y + $i][$pos_X - $i])) {
+                    $possibleMoves[] = [$pos_X + $i, $pos_Y - $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y + $i][$pos_X - $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X + $i, $pos_Y - $i, 'm', 'b'];
+                    }
+                    break;
+                }
+            }
+        }
+        for ($i = 1; $i < min($pos_X - 1, 8 - $pos_Y); $i++) {
+            if (1 <= $pos_Y - $i && $pos_Y - $i <= 8 && 1 <= $pos_X + $i && $pos_X + $i <= 8) {
+                if (is_int($board[$pos_Y - $i][$pos_X + $i])) {
+                    $possibleMoves[] = [$pos_X - $i, $pos_Y + $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y - $i][$pos_X + $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X - $i, $pos_Y + $i, 'm', 'b'];
+                    }
+                    break;
+                }
+            }
+        }
+        for ($i = 1; $i < min($pos_X - 1, $pos_Y - 1); $i++) {
+            if (1 <= $pos_Y - $i && $pos_Y - $i <= 8 && 1 <= $pos_X - $i && $pos_X - $i <= 8) {
+                if (is_int($board[$pos_Y - $i][$pos_X - $i])) {
+                    $possibleMoves[] = [$pos_X - $i, $pos_Y - $i, 'm', 'b'];
+                } else {
+                    if ($board[$pos_Y - $i][$pos_X - $i]->getColor() != $figure->getColor()) {
+                        $possibleMoves[] = [$pos_X - $i, $pos_Y - $i, 'm', 'b'];
+                    }
+                    break;
+                }
             }
         }
     }
@@ -476,3 +528,4 @@ function resetGame()
     start_new_game();
     return NO_WARNINGS;
 }
+
