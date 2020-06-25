@@ -10,7 +10,6 @@ class Game
     private $roqueBlack;
     private $roqueWhite;
     private $moveLog;
-    private $status;
     function __construct()
     {
         $this->board = Null;
@@ -31,7 +30,6 @@ class Game
             }
         }
 //    echo "Game\'s ready for you! First turn is for white"; Необязательно
-        $this->status = 'R';
         $this->turnNumber = 1;
         $this->roqueBlack = 0;
         $this->roqueWhite = 0;
@@ -517,10 +515,5 @@ class Game
     public function getMoveLog()
     {
         return $this->moveLog;
-    }
-
-    public function getStatus(): string
-    {
-        return $this->status;
     }
 }

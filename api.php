@@ -29,7 +29,7 @@ if ($_POST['new'] == 1){
     $board = $game->getBoard;
     $possibleMoves = $game->getPossibleMoves($board[$initial_x][$initial_y]);
     if (is_object($game)) {
-        if (is_array($possibleMoves)) {
+        if (sizeof($possibleMoves) > 0) {
             $result = $game->move([$initial_x, $initial_y], $possibleMoves, [$destination_x, $destination_y, $moveType, $figureType]);
             if ($result == -1) {
                 $answer['RESULT'] = -2; //Ошибка о неправильном ходе
