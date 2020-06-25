@@ -1,3 +1,3 @@
 # VK_PHP_test_task
 
-permalink: /index.php
+Chess game back-end as VK Test task for internship program
