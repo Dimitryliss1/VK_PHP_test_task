@@ -31,7 +31,6 @@ class Figure
         } else if ($position_y <= 2){
             $this->color = 'w';
         }
-//        echo "Created!";  Отладочное
     }
 
     public function getColor()  //Получение цвета
