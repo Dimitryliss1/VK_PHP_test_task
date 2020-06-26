@@ -317,6 +317,7 @@ class Game
                             }
                             if ($broken == False) {
                                 $possibleMoves[] = [$pos_X - 2, $pos_Y, 'r', 'k'];
+                                $this->roqueWhite = 1;
                             }
                         }
                     }
@@ -333,6 +334,7 @@ class Game
                             }
                             if ($broken == False) {
                                 $possibleMoves[] = [$pos_X + 2, $pos_Y, 'r', 'k'];
+                                $this->roqueWhite = 1;
                             }
                         }
                     }
@@ -352,6 +354,7 @@ class Game
                             }
                             if ($broken == False) {
                                 $possibleMoves[] = [$pos_X - 2, $pos_Y, 'r', 'k'];
+                                $this->roqueBlack = 1;
                             }
                         }
                     }
@@ -368,6 +371,7 @@ class Game
                             }
                             if ($broken == False) {
                                 $possibleMoves[] = [$pos_X + 2, $pos_Y, 'r', 'k'];
+                                $this->roqueBlack = 1;
                             }
                         }
                     }
