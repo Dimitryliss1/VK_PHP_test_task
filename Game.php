@@ -283,7 +283,7 @@ class Game
                     }
                 }
             }
-        } else if ($figure->getType() == 'k') {  //Логика ходов для короля. Рокировка пока только через него
+        } else if ($figure->getType() == 'k') {  //Логика ходов для короля. Включает в себя и рокировку
             $possible_changes = [-1, 0, 1]; //Перебор всех 9 комбинаций
             foreach ($possible_changes as $i) {
                 foreach ($possible_changes as $j) {
